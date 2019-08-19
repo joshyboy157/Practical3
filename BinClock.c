@@ -4,7 +4,7 @@
  * Modified for EEE3095S/3096S by Keegan Crankshaw
  * August 2019
  * 
- * <STUDNUM_1> <STUDNUM_2>
+ * <EYBJOS001> <GDFLAW001>
  * Date
 */
 
@@ -77,7 +77,11 @@ int main(void){
 	for (;;){
 		//Fetch the time from the RTC
 		//Write your logic here
+		 HH=hexCompensation(wiringPiI2CReadReg8(RTC,HOUR));
+		 MM=hexCompensation(wiringPiI2CReadReg8(RTC,MIN));
+		 SS=hexCompensation(wiringPiI2CReadReg8(RTC,SEC));
 		
+
 		//Function calls to toggle LEDs
 		//Write your logic here
 		
@@ -109,6 +113,15 @@ int hFormat(int hours){
  */
 void lightHours(int units){
 	// Write your logic to light up the hour LEDs here	
+	for(int i; i < 3; i++){
+		int c;
+		c = HH >> i;
+		c = c&1;
+		digitalWrite(LEDS[i], c);
+        }
+
+	
+	
 }
 
 /*
@@ -116,6 +129,12 @@ void lightHours(int units){
  */
 void lightMins(int units){
 	//Write your logic to light up the minute LEDs here
+	for(int i = 4; i <10 ; i++){
+                int d;
+                d = MM >> (i-4);
+                d = c&1;
+                digitalWrite(LEDS[i], c);
+
 }
 
 /*
@@ -125,6 +144,10 @@ void lightMins(int units){
  */
 void secPWM(int units){
 	// Write your logic here
+	int e;
+	e= SS/60;
+	e= e*1024;
+	pwmWrite(1,e);
 }
 
 /*
@@ -196,11 +219,12 @@ void hourInc(void){
 	if (interruptTime - lastInterruptTime>200){
 		printf("Interrupt 1 triggered, %x\n", hours);
 		//Fetch RTC Time
-		//HH=wiringPiI2cReadReg8(RTC,HOUR);
+		HH=hexCompensation(wiringPiI2cReadReg8(RTC,HOUR));
 		//Increase hours by 1, ensuring not to overflow
-		//HH+=1;
+		HH+=1;
+		HH = decCompensation(HH);
 		//Write hours back to the RTC
-		//wiringPiI2CWriteReg8(RTC, HOUR, HH);
+		wiringPiI2CWriteReg8(RTC, HOUR, HH);
 	}
 	lastInterruptTime = interruptTime;
 }
@@ -217,10 +241,12 @@ void minInc(void){
 	if (interruptTime - lastInterruptTime>200){
 		printf("Interrupt 2 triggered, %x\n", mins);
 		//Fetch RTC Time
-		MM=wiringPiI2CReadReg8(RTC,MIN);
+		MM=hexCompensation(wiringPiI2CReadReg8(RTC,MIN));
 		//Increase minutes by 1, ensuring not to overflow
-		printf(MM);
+		MM+=1;
 		//Write minutes back to the RTC
+		MM = decCompensation(MM);
+		wiringPiI2CWriteReg8(RTC,MIN,MM);
 	}
 	lastInterruptTime = interruptTime;
 }
